@@ -1,0 +1,107 @@
+#RIPPLR CARRY ADDER
+RIPPLE CAARRY ADDER
+A Ripple Carry Adder (RCA) is a digital circuit used to add two binary numbers. It is built by connecting multiple full adders in series, where the carry output from one stage becomes the carry input for the next stage.
+ module H_a (input a,
+            input b,
+            output s,output c);
+    xor g1 (s, a, b);
+    and g2 (c, a, b);
+endmodule
+module f_a (input a,
+input b,
+input c,
+    output sum,
+    output cout
+);
+    wire s1, c1, c2;
+    H_a h1 (a, b, s1, c1);
+    H_a h2 (s1, c, sum, c2);
+    or o1 (cout, c1, c2);
+endmodule
+module r_a (
+    input  [3:0] a,
+    input  [3:0] b,
+    input  cin,
+    output [3:0] s,
+    output cout
+);
+    wire c4, c5, c6;
+    f_a f1 (a[0], b[0], cin, s[0], c4);
+    f_a f2 (a[1], b[1], c4,  s[1], c5);
+    f_a f3 (a[2], b[2], c5,  s[2], c6);
+    f_a f4 (a[3], b[3], c6,  s[3], cout);
+endmodule
+Disadvantages of a Ripple Carry Adder
+	Slow Speed
+	The main disadvantage is the carry propagation delay. 
+	Each full adder must wait for the carry from the previous stage before producing its result. 
+Delay increases linearly with the number of bits:
+T_total=n×T_carry
+where:
+	n= number of bits 
+	T_carry= delay of one full adder stage 
+To overcome the disadvantages of a Ripple Carry Adder, faster adder architectures are used. Carry Look-Ahead Adder (CLA)
+	Computes carry signals in advance instead of waiting for ripple propagation. 
+	Much faster than RCA. 
+Carry generation equations:
+G_i=A_i B_i P_i=A_i⊕B_i C_(i+1)=G_i+P_i C_i
+Where:
+	G_i= Generate 
+	P_i= Propagate 
+
+Advantage
+	Reduces carry delay significantly.
+A Carry Look-Ahead Adder (CLA) is a fast binary adder designed to reduce the delay caused by carry propagation in a Ripple Carry Adder. Instead of waiting for each carry to ripple through every stage, the CLA calculates carries in advance using generate and propagate signals.
+ 
+Equations
+G_i=A_i B_i
+P_i=A_i⊕B_i
+Carry Equations
+C_1=G_0+P_0 C_in
+C_2=G_1+P_1 G_0+P_1 P_0 C_in
+C_3=G_2+P_2 G_1+P_2 P_1 G_0+P_2 P_1 P_0 C_in
+Sum Equation
+S_i=P_i⊕C_i
+
+module cla_4bit (
+input [3:0] A,
+input [3:0] B,
+input Cin,
+output [3:0] Sum,
+output Cout
+);
+
+wire [3:0] P, G;
+wire C1, C2, C3;
+xor (P[0], A[0], B[0]);
+xor (P[1], A[1], B[1]);
+xor (P[2], A[2], B[2]);
+xor (P[3], A[3], B[3]);
+and (G[0], A[0], B[0]);
+and (G[1], A[1], B[1]);
+and (G[2], A[2], B[2]);
+and (G[3], A[3], B[3]);
+wire w1;
+and (w1, P[0], Cin);
+or (C1, G[0], w1);
+wire w2, w3;
+and (w2, P[1], G[0]);
+and (w3, P[1], P[0], Cin);
+or (C2, G[1], w2, w3);
+wire w4, w5, w6;
+and (w4, P[2], G[1]);
+and (w5, P[2], P[1], G[0]);
+and (w6, P[2], P[1], P[0], Cin);
+or (C3, G[2], w4, w5, w6);
+wire w7, w8, w9, w10;
+and (w7, P[3], G[2]);
+and (w8, P[3], P[2], G[1]);
+and (w9, P[3], P[2], P[1], G[0]);
+and (w10, P[3], P[2], P[1], P[0], Cin);
+or (Cout, G[3], w7, w8, w9, w10);
+xor (Sum[0], P[0], Cin);
+xor (Sum[1], P[1], C1);
+xor (Sum[2], P[2], C2);
+xor (Sum[3], P[3], C3);
+
+endmodule
